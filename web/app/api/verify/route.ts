@@ -1,5 +1,5 @@
 import { signJwt, verifyJwt } from "@/lib/jwt";
-import { botPublicKey, webKeyPair } from "@/lib/keypairs";
+import { KeyPair } from "@/lib/keypairs";
 import { verifyCaptcha } from "@/lib/yandex";
 import { sign } from "crypto";
 import { NextResponse } from "next/server";
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
     const verificationToken = bearerToken.split(" ")[1];
 
-    const verified = await verifyJwt(verificationToken, botPublicKey);
+    const verified = await verifyJwt(verificationToken, KeyPair.getKeyPair().botPublicKey);
     if (!verified) {
         return NextResponse.json({ status: "INVALID_TOKEN" }, { status: 401 });
     }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${signJwt({ userId: verified.userId }, webKeyPair.privateKey)}`,
+            "Authorization": `Bearer ${signJwt({ userId: verified.userId }, KeyPair.getKeyPair().webPrivateKey)}`,
         },
         body: JSON.stringify({ token: verificationToken }),
     });

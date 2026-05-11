@@ -1,11 +1,13 @@
 
 const endpoint = "https://smartcaptcha.cloud.yandex.ru/validate";
-const secretKey = process.env.YANDEX_CAPTCHA_SECRET_KEY || "";
+const secretKey = () => {
+    return process.env.YANDEX_CAPTCHA_SECRET_KEY || "";
+};
 
 export async function verifyCaptcha(token: string, ip?: string): Promise<boolean> {
     try {
         const params = new URLSearchParams();
-        params.append("secret", secretKey);
+        params.append("secret", secretKey());
         params.append("token", token);
         if (ip) {
             params.append("ip", ip);

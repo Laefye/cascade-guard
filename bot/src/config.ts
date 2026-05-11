@@ -8,5 +8,6 @@ export const config = {
   keypairDir: process.env.KEYPAIR_DIR || '.',
   webEndpoint: process.env.WEB_ENDPOINT || '',
   webPublicKey: process.env.WEB_PUBLIC_KEY || '',
+  adminUserId: process.env.ADMIN_USER_ID || '',
   port: parseInt(process.env.PORT || '3001', 10),
 };

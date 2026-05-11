@@ -1,0 +1,13 @@
+services:
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      - BOT_PUBLIC_KEY=
+      - BOT_ENDPOINT=
+      - YANDEX_CAPTCHA_SECRET_KEY=
+      - KEYPAIR_DIR=/keypair
+    volumes:
+      - ./keypair-web:/keypair
+    

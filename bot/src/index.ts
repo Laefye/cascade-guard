@@ -8,9 +8,9 @@ const verifyMessage = new SlashCommandBuilder().setName("send_verify_message").s
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const rest = new REST().setToken(config.token);
 const keypair = await loadKeyPair(config.keypairDir);
+console.log("Public Key:", showPublicKey(keypair.publicKey));
 const api = new Api(keypair.publicKey, loadPublicKeyFromBase64(config.webPublicKey));
 
-console.log("Public Key:", showPublicKey(keypair.publicKey));
 
 client.once(Events.ClientReady, (c) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
@@ -18,6 +18,10 @@ client.once(Events.ClientReady, (c) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isChatInputCommand() && interaction.commandName === "send_verify_message") {
+        if (interaction.user.id !== config.adminUserId) {
+            await interaction.reply({ content: "You don't have permission to use this command.", flags: MessageFlags.Ephemeral });
+            return;
+        }
         await interaction.reply({ content: "Verification message sent!", flags: MessageFlags.Ephemeral });
         if (!interaction.channel) {
             console.error("Interaction has no channel!");

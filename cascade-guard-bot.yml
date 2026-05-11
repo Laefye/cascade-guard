@@ -1,0 +1,16 @@
+services:
+  bot:
+    build: ./bot
+    ports:
+      - "3001:3001"
+    environment:
+      - DISCORD_TOKEN=
+      - DISCORD_CLIENT_ID=
+      - DISCORD_GUILD_ID=
+      - DISCORD_ROLE_ID=
+      - KEYPAIR_DIR=/keypair
+      - WEB_ENDPOINT=
+      - WEB_PUBLIC_KEY=
+    volumes:
+      - ./keypair-bot:/keypair
+    
