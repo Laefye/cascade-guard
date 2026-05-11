@@ -25,14 +25,20 @@ async function sendTokenToServer(verificationToken: string, captchaToken: string
             onSuccess?.();
         } else {
             switch (result.status) {
-                case "INVALID_TOKEN":
-                    onError?.(new Error("Инвалидный токен в запросе"));
+                case "INVALID_REQUEST_TOKEN":
+                    onError?.("Неверный токен авторизации. Пожалуйста, используйте предоставленную ссылку для верификации.");
+                    break;
+                case "INVALID_SIGNATURE_TOKEN":
+                    onError?.("Неверная подпись токена. Попробуй ещё раз получить ссылку у бота.");
+                    break;
+                case "INVALID_REQUEST_BODY":
+                    onError?.("Неверное тело запроса. Пожалуйста, попробуйте снова.");
                     break;
                 case "INVALID_CAPTCHA":
-                    onError?.(new Error("Инвалидный токен капчи, попробуйте снова (обновите страницу)"));
+                    onError?.("Неверный токен капчи. Пожалуйста, попробуйте снова.");
                     break;
                 default:
-                    onError?.(new Error(`Unexpected status: ${result.status}`));
+                    onError?.(result.status);
             }
         }
     } catch (error) {
