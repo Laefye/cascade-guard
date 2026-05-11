@@ -1,7 +1,6 @@
 import { signJwt, verifyJwt } from "@/lib/jwt";
 import { KeyPair } from "@/lib/keypairs";
 import { verifyCaptcha } from "@/lib/yandex";
-import { sign } from "crypto";
 import { NextResponse } from "next/server";
 import z from "zod";
 
@@ -11,7 +10,7 @@ const RequestScheme = z.object({
 
 const botEndpoint = process.env.BOT_ENDPOINT || "";
 
-export async function GET() {
+export async function GET(request: Request) {
     const keyPair = KeyPair.getKeyPair();
     return NextResponse.json({ status: "OK" });
 }
