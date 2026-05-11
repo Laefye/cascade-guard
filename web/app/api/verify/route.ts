@@ -11,6 +11,11 @@ const RequestScheme = z.object({
 
 const botEndpoint = process.env.BOT_ENDPOINT || "";
 
+export async function GET() {
+    const keyPair = KeyPair.getKeyPair();
+    return NextResponse.json({ status: "OK" });
+}
+
 export async function POST(request: Request) {
     const bearerToken = request.headers.get("Authorization");
     if (!bearerToken || !bearerToken.startsWith("Bearer ")) {
