@@ -1,23 +1,20 @@
 import express from "express";
 import z from "zod";
 import crypto from "crypto";
-import { loadPublicKeyFromBase64 } from "./keypair.js";
-import { verifyJwt, type JwtPayload } from "./jwt.js";
 import EventEmitter from "events";
+import { defaultSignatureOptions, verify, VerifyAskScheme } from "./requests.js";
 
 const VerifyRequest = z.object({
-    token: z.string(),
+    verifyToken: z.string(),
 });
 
 export class Api {
     private app = express();
-    private botPublicKey: crypto.KeyObject;
     private webPublicKey: crypto.KeyObject;
 
     bus: EventEmitter = new EventEmitter();
 
-    constructor(botPublicKey: crypto.KeyObject, webPublicKey: crypto.KeyObject) {
-        this.botPublicKey = botPublicKey;
+    constructor(webPublicKey: crypto.KeyObject) {
         this.webPublicKey = webPublicKey;
 
         this.app.use(express.json());
@@ -29,29 +26,15 @@ export class Api {
                 return;
             }
 
-            const bearerToken = req.headers.authorization;
-            if (!bearerToken || !bearerToken.startsWith("Bearer ")) {
+            const verifyAsk = verify(parseResult.data.verifyToken, this.webPublicKey, VerifyAskScheme, defaultSignatureOptions);
+            if (!verifyAsk) {
                 res.status(401).json({ status: "INVALID_TOKEN" });
                 return;
             }
 
-            const verificationToken = bearerToken.split(" ")[1]!;
+            this.bus.emit("verified", verifyAsk.userId);
 
-            if (!verifyJwt(verificationToken, this.webPublicKey)) {
-                res.status(401).json({ status: "INVALID_TOKEN" });
-                return;
-            }
-
-            const { token } = parseResult.data;
-            const payload: JwtPayload | null = verifyJwt(token, this.botPublicKey);
-            if (!payload) {
-                res.status(401).json({ status: "INVALID_TOKEN" });
-                return;
-            }
-
-            this.bus.emit("verified", payload.userId);
-
-            res.status(200).json({ status: "OK", userId: payload.userId });
+            res.status(200).json({ status: "OK", userId: verifyAsk.userId });
         });
     }
 

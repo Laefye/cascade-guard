@@ -1,15 +1,15 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, Events, GatewayIntentBits, MessageFlags, REST, Routes, SlashCommandBuilder, TextChannel } from "discord.js";
 import { config } from "./config.js";
 import { loadKeyPair, loadPublicKeyFromBase64, showPublicKey } from "./keypair.js";
-import { signJwt } from "./jwt.js";
 import { Api } from "./api.js";
+import { defaultSignatureOptions, sign, type VerificationAsk } from "./requests.js";
 
 const verifyMessage = new SlashCommandBuilder().setName("send_verify_message").setDescription("Sends a verification message to the channel");
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const rest = new REST().setToken(config.token);
 const keypair = await loadKeyPair(config.keypairDir);
 console.log("Public Key:", showPublicKey(keypair.publicKey));
-const api = new Api(keypair.publicKey, loadPublicKeyFromBase64(config.webPublicKey));
+const api = new Api(loadPublicKeyFromBase64(config.webPublicKey));
 
 
 client.once(Events.ClientReady, (c) => {
@@ -42,10 +42,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.isButton() && interaction.customId === 'verify_button') {
+        const token = sign<VerificationAsk>({
+            userId: interaction.user.id,
+        }, keypair.privateKey, defaultSignatureOptions);
+        
         const button = new ButtonBuilder()
             .setLabel('Перейти')
             .setStyle(ButtonStyle.Link)
-            .setURL(config.webEndpoint + '/verify?token=' + encodeURIComponent(signJwt({ userId: interaction.user.id }, keypair.privateKey)));
+            .setURL(config.webEndpoint + '/verify?token=' + encodeURIComponent(token));
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
 

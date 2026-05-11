@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
-// ECDSA-SHA256
-export const jwtAlgorithm = 'ES256';
+export const signatureMethodShortName = 'ES256';
+export const signatureMethod = 'ecdsa-with-SHA256';
 
 function generateKeyPair() {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
