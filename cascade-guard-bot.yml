@@ -8,6 +8,7 @@ services:
       - DISCORD_CLIENT_ID=
       - DISCORD_GUILD_ID=
       - DISCORD_ROLE_ID=
+      - ADMIN_USER_ID=
       - KEYPAIR_DIR=/keypair
       - WEB_ENDPOINT=
       - WEB_PUBLIC_KEY=
