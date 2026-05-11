@@ -18,20 +18,21 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     const bearerToken = request.headers.get("Authorization");
     if (!bearerToken || !bearerToken.startsWith("Bearer ")) {
-        return NextResponse.json({ status: "INVALID_TOKEN" }, { status: 401 });
+        return NextResponse.json({ status: "INVALID_REQUEST_TOKEN" }, { status: 401 });
     }
     const verificationToken = bearerToken.split(" ")[1];
 
     const verified = await verifyJwt(verificationToken, KeyPair.getKeyPair().botPublicKey);
     if (!verified) {
-        return NextResponse.json({ status: "INVALID_TOKEN" }, { status: 401 });
+        console.error("Invalid JWT token:", verificationToken, ' public key:', KeyPair.getKeyPair().botPublicKey);
+        return NextResponse.json({ status: "INVALID_SIGNATURE_TOKEN" }, { status: 401 });
     }
 
     const body = await request.json();
     const parseResult = RequestScheme.safeParse(body);
 
     if (!parseResult.success) {
-        return NextResponse.json({ status: "INVALID_REQUEST" }, { status: 400 });
+        return NextResponse.json({ status: "INVALID_REQUEST_BODY" }, { status: 400 });
     }
 
     const { token } = parseResult.data;
