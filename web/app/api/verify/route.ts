@@ -24,7 +24,6 @@ export async function POST(request: Request) {
 
     const verified = await verifyJwt(verificationToken, KeyPair.getKeyPair().botPublicKey);
     if (!verified) {
-        console.error("Invalid JWT token:", verificationToken, ' public key:', KeyPair.getKeyPair().botPublicKey);
         return NextResponse.json({ status: "INVALID_SIGNATURE_TOKEN" }, { status: 401 });
     }
 

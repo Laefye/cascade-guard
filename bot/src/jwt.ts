@@ -9,7 +9,7 @@ export interface JwtPayload {
 export function signJwt(payload: JwtPayload, privateKey: crypto.KeyObject): string {
     const jwtOptions: jsonwebtoken.SignOptions = {
         algorithm: jwtAlgorithm,
-        expiresIn: "1m",
+        expiresIn: "5m",
         issuer: "cascade-guard-bot",
     };
     return jsonwebtoken.sign(payload, privateKey.export({ format: 'pem', type: 'pkcs8' }), jwtOptions);
