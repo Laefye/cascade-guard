@@ -11,7 +11,7 @@ const ResultScheme = z.object({
 
 async function sendTokenToServer(verificationToken: string, captchaToken: string, onSuccess?: () => void, onError?: (error: any) => void) {
     try {
-        const response = await fetch("/api/verify", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH}/api/verify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
