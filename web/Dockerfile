@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+ARG NEXT_PUBLIC_BASE_PATH
+
 COPY . .
 RUN npm run build
 
