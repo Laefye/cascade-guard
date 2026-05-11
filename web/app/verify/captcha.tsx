@@ -15,9 +15,8 @@ async function sendTokenToServer(verificationToken: string, captchaToken: string
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${verificationToken}`,
             },
-            body: JSON.stringify({ token: captchaToken }),
+            body: JSON.stringify({ verificationToken: verificationToken, captchaToken: captchaToken }),
         });
         const data = await response.json();
         const result = ResultScheme.parse(data);
