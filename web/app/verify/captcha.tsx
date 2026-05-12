@@ -52,24 +52,34 @@ async function sendTokenToServer(verificationToken: string, captchaToken: string
     }
 }
 
-export const ComponentWithCaptcha = () => {
+export const Captcha = () => {
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     return (
-        <div>
+        <div className={(loading ? "pointer-events-none opacity-50" : "") + " transition-opacity"}>
             {error && <div className="mb-4 text-danger">{error}</div>}
             {success && <div className="mb-4 text-success">Вы успешно прошли проверку</div>}
             {!success && !error && (
                 <SmartCaptcha
                     sitekey="ysc1_bvVEgd0e4OdU5I4tNPNStKbAQrpPfRnTwImKPyH8fe4af38d"
                     onSuccess={
-                        (token) => sendTokenToServer(
-                            searchParams.get("token") || "", token,
-                            () => setSuccess(true),
-                            (error) => setError(error.message)
-                        )
+                        (token) => {
+                            setLoading(true);
+                            sendTokenToServer(
+                                searchParams.get("token") || "", token,
+                                () => {
+                                    setSuccess(true);
+                                    setLoading(false);
+                                },
+                                (error) => {
+                                    setError(error.message);
+                                    setLoading(false);
+                                }
+                            );
+                        }
                     }
                 />
             )}
