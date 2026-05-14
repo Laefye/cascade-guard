@@ -12,6 +12,7 @@ services:
       - YANDEX_CAPTCHA_SECRET_KEY=
       - REDIS_URL=redis://redis:6379
       - KEYPAIR_DIR=/keypair
+      - NEXT_PUBLIC_BASE_PATH=
     volumes:
       - ./keypair-web:/keypair
     restart: always
