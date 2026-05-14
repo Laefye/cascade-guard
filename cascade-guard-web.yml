@@ -10,7 +10,12 @@ services:
       - BOT_PUBLIC_KEY=
       - BOT_ENDPOINT=
       - YANDEX_CAPTCHA_SECRET_KEY=
+      - REDIS_URL=redis://redis:6379
       - KEYPAIR_DIR=/keypair
     volumes:
       - ./keypair-web:/keypair
+    restart: always
+  redis:
+    image: redis:alpine
+    restart: always
     
