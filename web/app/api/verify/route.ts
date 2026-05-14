@@ -1,5 +1,4 @@
 import { KeyPair } from "@/lib/keypairs";
-import { defaultSignatureOptions, sign, VerifyAsk as VerifyAsk, VerificationAsk, VerificationAskScheme, verify } from "@/lib/requests";
 import { BotApi } from "@/lib/services/bot";
 import { markVerificationAsCompleted, takeVerificationForProcessing } from "@/lib/services/verifications";
 import { verifyCaptcha } from "@/lib/yandex";
