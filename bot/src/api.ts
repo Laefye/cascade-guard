@@ -8,25 +8,14 @@ const VerifyRequest = z.object({
     userId: z.string(),
 });
 
+export type TokenVerifier = (token: string) => boolean;
+
 export class Api {
     private app = express();
-    private webPublicKey: crypto.KeyObject;
 
     bus: EventEmitter = new EventEmitter();
 
-    private verifyWebJWT(token: string): boolean {
-        const payload = jwt.verify(token, this.webPublicKey, {
-            algorithms: ["ES256"],
-        });
-        if (typeof payload !== "object") {
-            return false;
-        }
-        return true;
-    }
-
-    constructor(webPublicKey: crypto.KeyObject) {
-        this.webPublicKey = webPublicKey;
-
+    constructor(public tokenVerifier: TokenVerifier) {
         this.app.use(express.json());
         
         this.app.post("/verify", (req, res) => {
@@ -49,7 +38,7 @@ export class Api {
                 return;
             }
 
-            if (!this.verifyWebJWT(token)) {
+            if (!this.tokenVerifier(token)) {
                 console.log("Invalid auth token:", token);
                 res.status(401).json({ status: "INVALID_AUTH_TOKEN" });
                 return;

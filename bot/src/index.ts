@@ -1,21 +1,24 @@
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client, Events, GatewayIntentBits, MessageFlags, REST, Routes, SlashCommandBuilder, TextChannel } from "discord.js";
 import { config } from "./config.js";
-import { loadKeyPair, loadPublicKeyFromBase64, showPublicKey } from "./keypair.js";
 import { Api } from "./api.js";
 import { Web } from "./services/web.js";
-import jwt from "jsonwebtoken";
+import { KeyPair, loadPublicKey, TokenManager } from "./keys.js";
 
 const verifyMessage = new SlashCommandBuilder().setName("send_verify_message").setDescription("Sends a verification message to the channel");
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const rest = new REST().setToken(config.token);
-const keypair = await loadKeyPair(config.keypairDir);
-console.log("Public Key:", showPublicKey(keypair.publicKey));
-const api = new Api(loadPublicKeyFromBase64(config.webPublicKey));
+const keypair = KeyPair.load(config.keypairDir);
+const tokenManager = new TokenManager();
 
 const webApi = new Web(config.webEndpoint, async () => {
-    return jwt.sign({}, keypair.privateKey, { algorithm: "ES256", expiresIn: "5m" });
+    return tokenManager.sign('cascade-guard-bot', 'cascade-guard-web', keypair.privateKey);
 });
 
+const webPublicKey = loadPublicKey('base64', config.webPublicKey);
+
+const api = new Api((token: string) => {
+    return tokenManager.verify(token, "cascade-guard-web", "cascade-guard-bot", webPublicKey);
+});
 
 client.once(Events.ClientReady, (c) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);

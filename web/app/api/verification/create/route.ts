@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         return createProblem({ status: "INVALID_AUTHORIZATION_HEADER" });
     }
 
-    if (getTokenManager().verify(token, "cascade-guard-bot", "cascade-guard-web", loadPublicKey('base64', config.botPublicKey))) {
+    if (!getTokenManager().verify(token, 'cascade-guard-bot', 'cascade-guard-web', loadPublicKey('base64', config.botPublicKey))) {
         return createProblem({ status: "INVALID_BOT_TOKEN" });
     }
 
