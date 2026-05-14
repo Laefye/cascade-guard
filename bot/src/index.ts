@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, Events, GatewayIntentBits, MessageFlags, REST, Routes, SlashCommandBuilder, TextChannel } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client, Events, GatewayIntentBits, MessageFlags, REST, Routes, SlashCommandBuilder, TextChannel } from "discord.js";
 import { config } from "./config.js";
 import { loadKeyPair, loadPublicKeyFromBase64, showPublicKey } from "./keypair.js";
 import { Api } from "./api.js";
@@ -43,8 +43,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
             .setCustomId('verify_button');
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
-        
-        channel.send({ content: "Нажмите на кнопку ниже, чтобы пройти верификацию:", components: [row] });
+        const attachment = new AttachmentBuilder('./assets/verification.png');
+
+        channel.send({ components: [row], files: [attachment] });
     }
 
     if (interaction.isButton() && interaction.customId === 'verify_button') {

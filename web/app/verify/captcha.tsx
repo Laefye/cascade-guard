@@ -59,9 +59,9 @@ export const Captcha = () => {
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className={(loading ? "pointer-events-none opacity-50" : "") + " transition-opacity"}>
-            {error && <div className="mb-4 text-danger">{error}</div>}
-            {success && <div className="mb-4 text-success">Вы успешно прошли проверку</div>}
+        <div className={(loading ? "pointer-events-none opacity-50" : "") + " transition-opacity flex flex-col gap-4"}>
+            {error && <div className="text-center text-danger">{error}</div>}
+            {success && <div className="text-center text-success">Вы успешно прошли проверку</div>}
             {!success && !error && (
                 <SmartCaptcha
                     sitekey="ysc1_bvVEgd0e4OdU5I4tNPNStKbAQrpPfRnTwImKPyH8fe4af38d"
