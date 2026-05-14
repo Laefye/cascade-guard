@@ -1,7 +1,8 @@
+import { config } from "./config";
 
 const endpoint = "https://smartcaptcha.cloud.yandex.ru/validate";
 const secretKey = () => {
-    return process.env.YANDEX_CAPTCHA_SECRET_KEY || "";
+    return config.yandexCaptchaSecretKey;
 };
 
 export async function verifyCaptcha(token: string, ip?: string): Promise<boolean> {
@@ -20,8 +21,12 @@ export async function verifyCaptcha(token: string, ip?: string): Promise<boolean
             },
             body: params.toString(),
         });
+        if (!response.ok) {
+            console.error("Failed to verify captcha, server responded with status:", response.status);
+            return false;
+        }
+
         const data = await response.json();
-        console.log("Captcha verification response:", data);
         return data.status === 'ok';
     } catch (error) {
         console.error("Error verifying captcha:", error);

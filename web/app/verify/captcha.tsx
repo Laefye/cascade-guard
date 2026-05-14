@@ -52,7 +52,7 @@ async function sendTokenToServer(verificationId: string, captchaToken: string, o
     }
 }
 
-export const Captcha = () => {
+export const Captcha = ({ yandexSiteKey }: { yandexSiteKey: string }) => {
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -64,7 +64,7 @@ export const Captcha = () => {
             {success && <div className="text-center text-success">Вы успешно прошли проверку</div>}
             {!success && !error && (
                 <SmartCaptcha
-                    sitekey="ysc1_bvVEgd0e4OdU5I4tNPNStKbAQrpPfRnTwImKPyH8fe4af38d"
+                    sitekey={yandexSiteKey}
                     onSuccess={
                         (token) => {
                             setLoading(true);

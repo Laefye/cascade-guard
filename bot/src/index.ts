@@ -54,7 +54,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             verificationId = await webApi.createVerificationRequest(interaction.user.id, interaction.user.displayName, interaction.user.avatarURL() || null);
         } catch (error) {
             console.error("Failed to create verification request:", error);
-            await interaction.reply({ content: "Случилось депрессия <:fir_sad:1384540465109401704>", flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: "Технические шоколадки <:fir_sad:1384540465109401704>", flags: MessageFlags.Ephemeral });
             return;
         }
 

@@ -1,8 +1,8 @@
 import { createProblem } from "@/lib/problem";
 import z from "zod";
 import { createVerificationId } from "@/lib/services/verifications";
-import jwt from "jsonwebtoken";
-import { KeyPair } from "@/lib/keypairs";
+import { getTokenManager, loadPublicKey } from "@/lib/keys";
+import { config } from "@/lib/config";
 
 const CreateVerificationRequestScheme = z.object({
     userId: z.string(),
@@ -13,16 +13,6 @@ const CreateVerificationRequestScheme = z.object({
 type VerificationResponseId = {
     verificationId: string;
 };
-
-async function verifyBotRequest(token: string): Promise<boolean> {
-    const payload = jwt.verify(token, KeyPair.getKeyPair().botPublicKey, {
-        algorithms: ["ES256"],
-    });
-    if (typeof payload !== "object") {
-        return false;
-    }
-    return true;
-}
 
 export async function POST(request: Request) {
     const authorizationHeader = request.headers.get("Authorization");
@@ -37,7 +27,7 @@ export async function POST(request: Request) {
         return createProblem({ status: "INVALID_AUTHORIZATION_HEADER" });
     }
 
-    if (!(await verifyBotRequest(token))) {
+    if (getTokenManager().verify(token, "cascade-guard-bot", "cascade-guard-web", loadPublicKey('base64', config.botPublicKey))) {
         return createProblem({ status: "INVALID_BOT_TOKEN" });
     }
 

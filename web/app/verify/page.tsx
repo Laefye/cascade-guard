@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Captcha } from "./captcha";
 import { getVerificationRequest, VerificationRequest } from "@/lib/services/verifications";
+import { config } from "@/lib/config";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ id: string | string[] | undefined }> }) {
   const params = await searchParams;
@@ -25,7 +26,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ i
               <h1 className="text-2xl font-bold text-center">Привет, {verificationData.userDisplayName}!</h1>
               <p className="text-center">Пожалуйста, подтвердите, что вы не робот, чтобы завершить верификацию.</p>
               <Suspense>
-                <Captcha />
+                <Captcha yandexSiteKey={config.yandexCaptchaSiteKey} />
               </Suspense>
             </>
           ) : (

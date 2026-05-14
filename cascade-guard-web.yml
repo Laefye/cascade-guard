@@ -9,6 +9,7 @@ services:
     environment:
       - BOT_PUBLIC_KEY=
       - BOT_ENDPOINT=
+      - YANDEX_CAPTCHA_SITE_KEY=
       - YANDEX_CAPTCHA_SECRET_KEY=
       - REDIS_URL=redis://redis:6379
       - KEYPAIR_DIR=/keypair

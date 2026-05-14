@@ -1,10 +1,9 @@
-import { KeyPair } from "@/lib/keypairs";
 import { BotApi } from "@/lib/services/bot";
 import { markVerificationAsCompleted, takeVerificationForProcessing } from "@/lib/services/verifications";
 import { verifyCaptcha } from "@/lib/yandex";
 import { NextResponse } from "next/server";
 import z from "zod";
-import jwt from "jsonwebtoken";
+import { getKeyPair, getTokenManager } from "@/lib/keys";
 
 const RequestScheme = z.object({
     verificationId: z.string(),
@@ -12,14 +11,8 @@ const RequestScheme = z.object({
 });
 
 const botApi = new BotApi(process.env.BOT_ENDPOINT || "", async () => {
-    const keyPair = KeyPair.getKeyPair();
-    return jwt.sign({}, keyPair.webPrivateKey, { algorithm: "ES256", expiresIn: "5m" });
+    return getTokenManager().sign("cascade-guard-web", "cascade-guard-bot", getKeyPair().privateKey);
 });
-
-export async function GET(request: Request) {
-    const keyPair = KeyPair.getKeyPair();
-    return NextResponse.json({ status: "OK" });
-}
 
 export async function POST(request: Request) {
     
