@@ -1,15 +1,21 @@
 import { KeyPair } from "@/lib/keypairs";
 import { defaultSignatureOptions, sign, VerifyAsk as VerifyAsk, VerificationAsk, VerificationAskScheme, verify } from "@/lib/requests";
+import { BotApi } from "@/lib/services/bot";
+import { markVerificationAsCompleted, takeVerificationForProcessing } from "@/lib/services/verifications";
 import { verifyCaptcha } from "@/lib/yandex";
 import { NextResponse } from "next/server";
 import z from "zod";
+import jwt from "jsonwebtoken";
 
 const RequestScheme = z.object({
-    verificationToken: z.string(),
+    verificationId: z.string(),
     captchaToken: z.string(),
 });
 
-const botEndpoint = process.env.BOT_ENDPOINT || "";
+const botApi = new BotApi(process.env.BOT_ENDPOINT || "", async () => {
+    const keyPair = KeyPair.getKeyPair();
+    return jwt.sign({}, keyPair.webPrivateKey, { algorithm: "ES256", expiresIn: "5m" });
+});
 
 export async function GET(request: Request) {
     const keyPair = KeyPair.getKeyPair();
@@ -19,41 +25,33 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     
     const body = await request.json();
-    const parseResult = RequestScheme.safeParse(body);
+    const parsedBody = RequestScheme.safeParse(body);
     
-    if (!parseResult.success) {
+    if (!parsedBody.success) {
         return NextResponse.json({ status: "INVALID_REQUEST_BODY" }, { status: 400 });
     }
 
     
-    const { captchaToken: token } = parseResult.data;
+    const { captchaToken: token } = parsedBody.data;
     
     const isCaptchaValid = await verifyCaptcha(token);
     if (!isCaptchaValid) {
         return NextResponse.json({ status: "INVALID_CAPTCHA" }, { status: 400 });
     }
     
-    const verifactionAsk = await verify(parseResult.data.verificationToken, KeyPair.getKeyPair().botPublicKey, VerificationAskScheme, defaultSignatureOptions);
-    if (!verifactionAsk) {
-        return NextResponse.json({ status: "INVALID_SIGNATURE_TOKEN" }, { status: 400 });
+    const taken = await takeVerificationForProcessing(parsedBody.data.verificationId);
+    if (!taken) {
+        return NextResponse.json({ status: "VERIFICATION_NOT_FOUND_OR_ALREADY_PROCESSED" }, { status: 404 });
     }
 
-    const verifyToken = sign<VerifyAsk>({
-        userId: verifactionAsk.userId,
-    }, KeyPair.getKeyPair().webPrivateKey, defaultSignatureOptions);
-
-    const response = await fetch(botEndpoint + "/verify", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ verifyToken: verifyToken }),
-    });
-
-    if (!response.ok) {
-        console.error("Failed to send verification result to bot:", await response.text());
-        return NextResponse.json({ status: "FAILED_TO_NOTIFY_BOT" }, { status: 500 });
+    try {
+        await botApi.verify(taken.userId);
+    } catch (error) {
+        console.error("Failed to verify user with bot:", error);
+        return NextResponse.json({ status: "FAILED_TO_VERIFY_WITH_BOT" }, { status: 500 });
     }
+
+    await markVerificationAsCompleted(parsedBody.data.verificationId);
 
     return NextResponse.json({ status: "OK" });
 }

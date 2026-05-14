@@ -3,9 +3,10 @@ import z from "zod";
 import crypto from "crypto";
 import EventEmitter from "events";
 import { defaultSignatureOptions, verify, VerifyAskScheme } from "./requests.js";
+import jwt from "jsonwebtoken";
 
 const VerifyRequest = z.object({
-    verifyToken: z.string(),
+    userId: z.string(),
 });
 
 export class Api {
@@ -13,6 +14,16 @@ export class Api {
     private webPublicKey: crypto.KeyObject;
 
     bus: EventEmitter = new EventEmitter();
+
+    private verifyWebJWT(token: string): boolean {
+        const payload = jwt.verify(token, this.webPublicKey, {
+            algorithms: ["ES256"],
+        });
+        if (typeof payload !== "object") {
+            return false;
+        }
+        return true;
+    }
 
     constructor(webPublicKey: crypto.KeyObject) {
         this.webPublicKey = webPublicKey;
@@ -26,15 +37,28 @@ export class Api {
                 return;
             }
 
-            const verifyAsk = verify(parseResult.data.verifyToken, this.webPublicKey, VerifyAskScheme, defaultSignatureOptions);
-            if (!verifyAsk) {
-                res.status(401).json({ status: "INVALID_TOKEN" });
+            const authHeader = req.headers["authorization"];
+            if (!authHeader) {
+                res.status(401).json({ status: "MISSING_AUTHORIZATION_HEADER" });
                 return;
             }
 
-            this.bus.emit("verified", verifyAsk.userId);
+            const [scheme, token] = authHeader.split(" ");
+            if (scheme !== "Bearer" || !token) {
+                console.log("Invalid auth header format:", authHeader);
+                res.status(401).json({ status: "INVALID_AUTHORIZATION_HEADER" });
+                return;
+            }
 
-            res.status(200).json({ status: "OK", userId: verifyAsk.userId });
+            if (!this.verifyWebJWT(token)) {
+                console.log("Invalid auth token:", token);
+                res.status(401).json({ status: "INVALID_AUTH_TOKEN" });
+                return;
+            }
+
+            this.bus.emit("verified", parseResult.data.userId);
+
+            res.status(200).json({ status: "OK" });
         });
     }
 

@@ -13,14 +13,14 @@ type VerifyError = {
     message: string;
 };
 
-async function sendTokenToServer(verificationToken: string, captchaToken: string, onSuccess?: () => void, onError?: (error: VerifyError) => void) {
+async function sendTokenToServer(verificationId: string, captchaToken: string, onSuccess?: () => void, onError?: (error: VerifyError) => void) {
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/verify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ verificationToken: verificationToken, captchaToken: captchaToken }),
+            body: JSON.stringify({ verificationId: verificationId, captchaToken: captchaToken }),
         });
 
         if (!response.ok) {
@@ -69,7 +69,7 @@ export const Captcha = () => {
                         (token) => {
                             setLoading(true);
                             sendTokenToServer(
-                                searchParams.get("token") || "", token,
+                                searchParams.get("id") || "", token,
                                 () => {
                                     setSuccess(true);
                                     setLoading(false);

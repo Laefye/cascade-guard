@@ -1,11 +1,17 @@
 services:
-  bot:
-    build: ./bot
-    env_file: ./bot/.env
+  # bot:
+  #   build: ./bot
+  #   env_file: ./bot/.env
+  #   ports:
+  #     - "3001:3001"
+  # web:
+  #   build: ./web
+  #   env_file: ./web/.env.local
+  #   ports:
+  #     - "3000:3000"
+  redis:
+    image: redis:alpine
     ports:
-      - "3001:3001"
-  web:
-    build: ./web
-    env_file: ./web/.env.local
-    ports:
-      - "3000:3000"
+      - "6379:6379"
+    restart: always
+    

@@ -3,6 +3,8 @@ import { config } from "./config.js";
 import { loadKeyPair, loadPublicKeyFromBase64, showPublicKey } from "./keypair.js";
 import { Api } from "./api.js";
 import { defaultSignatureOptions, sign, type VerificationAsk } from "./requests.js";
+import { Web, WebApiResponseError } from "./services/web.js";
+import jwt from "jsonwebtoken";
 
 const verifyMessage = new SlashCommandBuilder().setName("send_verify_message").setDescription("Sends a verification message to the channel");
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -10,6 +12,10 @@ const rest = new REST().setToken(config.token);
 const keypair = await loadKeyPair(config.keypairDir);
 console.log("Public Key:", showPublicKey(keypair.publicKey));
 const api = new Api(loadPublicKeyFromBase64(config.webPublicKey));
+
+const webApi = new Web(config.webEndpoint, async () => {
+    return jwt.sign({}, keypair.privateKey, { algorithm: "ES256", expiresIn: "5m" });
+});
 
 
 client.once(Events.ClientReady, (c) => {
@@ -42,14 +48,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.isButton() && interaction.customId === 'verify_button') {
-        const token = sign<VerificationAsk>({
-            userId: interaction.user.id,
-        }, keypair.privateKey, defaultSignatureOptions);
-        
+        let verificationId;
+
+        try {
+            verificationId = await webApi.createVerificationRequest(interaction.user.id, interaction.user.displayName, interaction.user.avatarURL() || null);
+        } catch (error) {
+            console.error("Failed to create verification request:", error);
+            await interaction.reply({ content: "Случилось депрессия <:fir_sad:1384540465109401704>", flags: MessageFlags.Ephemeral });
+            return;
+        }
+
         const button = new ButtonBuilder()
             .setLabel('Перейти')
             .setStyle(ButtonStyle.Link)
-            .setURL(config.webEndpoint + '/verify?token=' + encodeURIComponent(token));
+            .setURL(webApi.getVerifyEndpoint(verificationId.verificationId));
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
 
