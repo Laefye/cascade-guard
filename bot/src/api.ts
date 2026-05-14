@@ -2,7 +2,6 @@ import express from "express";
 import z from "zod";
 import crypto from "crypto";
 import EventEmitter from "events";
-import { defaultSignatureOptions, verify, VerifyAskScheme } from "./requests.js";
 import jwt from "jsonwebtoken";
 
 const VerifyRequest = z.object({
