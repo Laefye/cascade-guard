@@ -2,8 +2,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client
 import { config } from "./config.js";
 import { loadKeyPair, loadPublicKeyFromBase64, showPublicKey } from "./keypair.js";
 import { Api } from "./api.js";
-import { defaultSignatureOptions, sign, type VerificationAsk } from "./requests.js";
-import { Web, WebApiResponseError } from "./services/web.js";
+import { Web } from "./services/web.js";
 import jwt from "jsonwebtoken";
 
 const verifyMessage = new SlashCommandBuilder().setName("send_verify_message").setDescription("Sends a verification message to the channel");

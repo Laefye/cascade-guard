@@ -3,7 +3,7 @@ services:
     build:
       context: ./web
       args:
-        NEXT_PUBLIC_BASE_PATH: ""
+        - NEXT_PUBLIC_BASE_PATH=
     ports:
       - "3000:3000"
     environment:
