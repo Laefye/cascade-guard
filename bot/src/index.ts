@@ -74,10 +74,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 api.bus.on('verified', async (userId: string) => {
     try {
-        const guild = await client.guilds.fetch(config.guildId);
-        const member = await guild.members.fetch(userId);
+        const channel = await client.channels.fetch(config.channelId);
+        const member = await (await client.guilds.fetch(config.guildId)).members.fetch(userId);
         await member.roles.add(config.roleId);
         console.log(`Assigned role to user ${userId}`);
+        if (channel && channel.isTextBased() && channel instanceof TextChannel) {
+            channel.send({
+                content: `Добро пожаловать, <@${userId}>!`,
+            });
+        }
     } catch (error) {
         console.error(`Failed to assign role to user ${userId}:`, error);
     }
